@@ -16,7 +16,7 @@
     "Desktop",
     "Windows"
   ],
-  "author": "arnolem",
+  "author": "Doğukan Çağatay <dcagatay@gmail.com>",
   "license": "GNU",
   "devDependencies": {
     "electron": "^8.2.3",
