@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>GoogleTasks Desktop</title>
+    <title>Google Tasks</title>
     <link rel="stylesheet" type="text/css" href="api.css"/>
     <link rel="stylesheet" type="text/css" href="index.css"/>
 </head>
@@ -17,11 +17,11 @@
 
 <div class="wait js-wait"><img src=../images/preloader.gif></div>
 
-<webview id="view" class="view" src="https://mail.google.com/tasks/ig?pli=1" partition="persist:google"></webview>
+<webview id="view" class="view" src="https://tasks.google.com/embed/?origin=https://mail.google.com" partition="persist:google"></webview>
 
 </body>
 
 <script>
-    require('./renderer.js')
+    require("./renderer.js")
 </script>
 </html>
