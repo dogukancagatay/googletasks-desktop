@@ -1,6 +1,6 @@
 {
   "name": "googletasks-desktop",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A desktop app for Google Tasks, using Electron container",
   "main": "src/main.js",
   "scripts": {
@@ -49,8 +49,8 @@
           "name": "@electron-forge/publisher-github",
           "config": {
             "repository": {
-              "owner": "Doğukan Çağatay",
-              "name": "dogukancagatay/googletasks-desktop"
+              "owner": "dogukancagatay",
+              "name": "googletasks-desktop"
             },
             "draft": true
           }
