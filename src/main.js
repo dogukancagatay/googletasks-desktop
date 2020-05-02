@@ -6,10 +6,10 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
     app.quit();
 }
 
-require('update-electron-app')({// eslint-disable-line global-require
-    repo: 'dogukancagatay/googletasks-desktop',
-    updateInterval: '12 hour'
-});
+// require('update-electron-app')({// eslint-disable-line global-require
+//     repo: 'dogukancagatay/googletasks-desktop',
+//     updateInterval: '12 hour'
+// });
 
 let mainWindow;
 let appTray;
