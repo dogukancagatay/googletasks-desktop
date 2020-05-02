@@ -1,37 +1,27 @@
-// Include Node.JS Electron modules
-const electron = require("electron");
-// Include Node.JS Path module
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen } = require("electron");
 const path = require("path");
 
-// Electron module to control application life.
-const app = electron.app;
-// Electron module to create native browser window.
-const BrowserWindow = electron.BrowserWindow;
-// Electron module to create tray icon on notification bar
-const Tray = electron.Tray;
-// Electron module to create tray menu or context menu
-const Menu = electron.Menu;
-// Electron module to allow communication between main en renderer process
-const ipc = electron.ipcMain;
-// Electron module to use shell like open external link
-const shell = electron.shell;
-// Electron module to retrieve information about screen
-const {screen} = require("electron");
+// Handle creating/removing shortcuts on Windows when installing/uninstalling.
+if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
+    app.quit();
+}
 
-// Keep a global reference of the window object, if you don"t, the window will
-// be closed automatically when the JavaScript object is garbage collected.
+require('update-electron-app')({// eslint-disable-line global-require
+    repo: 'dogukancagatay/googletasks-desktop',
+    updateInterval: '12 hour'
+});
+
 let mainWindow;
-let appIcon;
+let appTray;
 
 function createWindow() {
 
-    // Create the browser window.
     mainWindow = new BrowserWindow({
         "width": 300,
         "height": 600,
         "x": screen.getPrimaryDisplay().workAreaSize.width - 300,
         "y": screen.getPrimaryDisplay().workAreaSize.height - 600,
-        "icon": path.join(__dirname, "images", "appicon.png"),
+        "icon": path.join(__dirname, "images", "icon.png"),
         "minWidth": 300,
         "minHeight": 300,
         "backgroundColor": "#50ffffff",
@@ -44,56 +34,56 @@ function createWindow() {
         },
     });
 
-    // and load the index.html of the app.
     mainWindow.loadURL(`file://${__dirname}/views/index.html`);
 
-    appIcon = new Tray(path.join(__dirname, "images", "trayicon.png"));
-    appIcon.setToolTip("GoogleTasks Desktop by Wixiweb");
-    appIcon.on("click", function () {
-        if(mainWindow.isVisible()){
-            mainWindow.hide();
-        }else{
-            mainWindow.focus();
-            mainWindow.show();
-        }
+    mainWindow.on("closed", function () {
+        mainWindow = null
     });
 
+    if (!appTray) {
+        initAppTray();
+    }
+
+}
+
+function initAppTray() {
+    appTray = new Tray(path.join(__dirname, "images", "trayiconTemplate.png"));
+    appTray.setToolTip("Google Tasks");
+
     var contextMenu = Menu.buildFromTemplate([
+        // {
+        //     label: "Debug",
+        //     click: function () {
+        //         mainWindow.webContents.openDevTools({ mode: 'detach' })
+        //     }
+        // },
         {
-            label: "Debug",
-            icon: path.join(__dirname, "images", "debug.png"),
+            label: "Show",
             click: function () {
-
-                // Open the DevTools.
-                mainWindow.openDevTools();
-
-                // Adapte app size for DevTools.
-                mainWindow.setSize(
-                    mainWindow.getSize()[0] + 600,
-                    mainWindow.getSize()[1]
-                );
-
-                // Adapte app position for DevTools.
-                mainWindow.setPosition(
-                    mainWindow.getPosition()[0] - 600,
-                    mainWindow.getPosition()[1]
-                );
+                if (mainWindow === null) {
+                    createWindow()
+                } else {
+                    mainWindow.focus();
+                    mainWindow.show();
+                }
             }
-        }, {
-            label: "Open in browser",
-            icon: path.join(__dirname, "images", "external.png"),
+        },
+        {
+            label: "Hide",
             click: function () {
-                shell.openExternal("https://mail.google.com/tasks/ig")
+                if (mainWindow && mainWindow.isVisible()) {
+                    mainWindow.hide();
+                }
             }
-        }, {
+        },
+        {
             label: "Logout",
-            icon: path.join(__dirname, "images", "logout.png"),
             click: function () {
                 mainWindow.webContents.send("view-load-url", "https://accounts.google.com/logout?&continue=https%3A%2F%2Fmail.google.com%2Ftasks%2Fig&followup=https%3A%2F%2Fmail.google.com%2Ftasks%2Fig#identifier");
             }
-        }, {
+        },
+        {
             label: "Close",
-            icon: path.join(__dirname, "images", "close.png"),
             click: function () {
                 mainWindow.close();
             }
@@ -101,45 +91,49 @@ function createWindow() {
 
     ]);
 
-    // Apply contextMenu to the Tray Icon
-    appIcon.setContextMenu(contextMenu);
+    appTray.on("click", function () {
+        if (mainWindow === null) {
+            createWindow();
+        } else {
+            if (mainWindow.isVisible()) {
+                mainWindow.hide();
+            } else {
+                mainWindow.focus();
+                mainWindow.show();
+            }
+        }
+    });
 
-    // Emitted when the window is closed.
-    mainWindow.on("closed", function () {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        mainWindow = null
-    })
+    if (process.platform === "darwin") {
+        appTray.on("right-click", function () {
+            appTray.popUpContextMenu(contextMenu);
+        });
+    } else {
+        appTray.setContextMenu(contextMenu);
+    }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on("ready", createWindow);
 
-// Quit when all windows are closed.
 app.on("window-all-closed", function () {
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== "darwin") {
         app.quit()
     }
 });
 
 app.on("activate", function () {
-    // On OS X it"s common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (mainWindow === null) {
         createWindow()
     }
 });
 
-ipc.on("close-main-window", function () {
+app.setAboutPanelOptions({
+    credits: "All Google Tasks logos and the Google Tasks service are property of Google.",
+    website: "https://github.com/dogukancagatay/googletasks-desktop",
+});
+
+ipcMain.on("close-main-window", function () {
     if (mainWindow) {
         mainWindow.hide();
     }
 });
-
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.

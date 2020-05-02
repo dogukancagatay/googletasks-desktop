@@ -1,11 +1,8 @@
 const electron = require("electron");
-const {remote} = require("electron");
-
-const {screen} = remote;
+const { remote, ipcRenderer } = require("electron");
+const { screen } = remote;
 
 let BrowserWindow = remote.getCurrentWindow();
-
-const ipc = electron.ipcRenderer;
 
 let close = document.querySelector(".js-close");
 let pin = document.querySelector(".js-pin");
@@ -18,7 +15,7 @@ let webview = document.getElementById("view");
 
 
 close.addEventListener("click", function () {
-    ipc.send("close-main-window");
+    ipcRenderer.send("close-main-window");
 });
 
 pin.addEventListener("click", function () {
@@ -49,14 +46,14 @@ BrowserWindow.on("resize", function () {
     }
 });
 
-ipc.on("view-load-url", function (e, msg) {
+ipcRenderer.on("view-load-url", function (e, msg) {
     webview.src = msg;
 });
 
 
 webview.addEventListener("did-get-redirect-request", function (e) {
     if (e.newURL.lastIndexOf("https://www.google.com/accounts/ServiceLogin") === 0) {
-        title.innerHTML = "Auth";
+        title.innerHTML = "Authenticate";
     }
 });
 
